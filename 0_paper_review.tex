@@ -1,0 +1,118 @@
+% CVPR 2022 Paper Template
+% based on the CVPR template provided by Ming-Ming Cheng (https://github.com/MCG-NKU/CVPR_Template)
+% modified and extended by Stefan Roth (stefan.roth@NOSPAMtu-darmstadt.de)
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+% \usepackage[review]{cvpr}      % To produce the REVIEW version
+% \usepackage{cvpr}              % To produce the CAMERA-READY version
+\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Include other packages here, before hyperref.
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, e.g. with the
+% file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete
+% ReviewTempalte.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you
+%  should be clear).
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\cvprPaperID{0}
+\def\confName{CSE 559a}
+\def\confYear{2023}
+
+
+\begin{document}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{Review of ``[Original Paper Title Goes Here]''}
+
+\author{
+Your Name
+}
+\maketitle
+
+%%%%%%%%% BODY TEXT
+\section{Main Paper Metadata}
+
+\begin{itemize}
+
+\item Title: [paper title]
+\item Conference: [e.g., CVPR 2023, this should be from a recent (ideally from the last 12 months) or upcoming CVPR, ECCV, or ICCV]
+\item Link: [link to the HTML page on \url{https://openaccess.thecvf.com/menu}{The CVF website} for the paper you selected
+\href{https://openaccess.thecvf.com/content/CVPR2022/html/Zhu_TransGeo_Transformer_Is_All_You_Need_for_Cross-View_Image_Geo-Localization_CVPR_2022_paper.html}]
+\item Citation: [\cite{Alpher02} replace this with the correct citation]
+
+\end{itemize}
+
+\section{Paper Review}
+
+[A few sentence summary of the paper, you can draw inspiration from the paper abstract, but write in your own words.]
+
+[The subsections below here are going to be good for most papers, but feel free to adjust if you don't think they make sense for your paper. This might be the case if it's a paper that only conducts an evaluation and doesn't introduce a new method. Also, it's perfectly ok for the sections to be just a few sentences.]
+
+[the text in brackets is intended to give you some guidance on what to write in a given section, you don't need to answer every question and you could choose to include information that wasn't asked for]
+
+\subsection{Task}
+
+[what task is the work addressing? (e.g., Image classification or Zero-Shot Semantic Segmentation). It might be useful to include a brief description of the task if it's not one we've discussed extensively in class. Are there any unique aspects to the task definition?]
+
+\subsection{Approach}
+
+[what approach is being used? This could include references to prior work that is being used as a foundation. Make sure to give a high-level idea of the overall approach and emphasize what's new in the work.]
+
+\subsection{Benefits, Outcomes, and Results}
+
+[What are the most important benefits of the approach? This could include quantitative performance on some benchmark dataset or reduced computational complexity. What are other unique outcomes or results? Focus on things that make this work different (both better and worse) from prior work.] 
+
+\subsection{Future Work}
+
+[What do you think might be natural next steps for this work?]
+
+\subsection{Assessment}
+
+[What do you think about this work? What are the main strengths? What are the main weaknesses? This can include your opinions about the writing, figures, evaluation, or the method itself.]
+
+\subsection{Questions and Unknowns}
+
+[What were some questions this work raised for you? What are some things you didn't understand? What would you like to learn more about?]
+
+\section{Formatting Tips}
+\label{sec:formatting}
+
+{\Large BE SURE TO DELETE THE FORMATTING SECTION PRIOR TO SUBMISSION}
+
+\subsection{References}
+
+You probably won't need many references for these reviews, but just in case. Add the bibtex entry to \verb|bibliography.bib| and add the reference to the appropriate place in the text, enclose the citation number in square brackets, for
+example~\cite{Authors14}. 
+Where appropriate, include page numbers and the name(s) of editors of referenced books.
+When you cite multiple papers at once, please make sure that you cite them in numerical order like this \cite{Alpher02,Alpher03,Alpher05}.
+If you use the template as advised, this will be taken care of automatically.
+
+%%%%%%%%% REFERENCES
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{bibliography}
+}
+
+\end{document}
