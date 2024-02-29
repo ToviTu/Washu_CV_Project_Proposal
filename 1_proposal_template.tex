@@ -44,10 +44,10 @@
 \begin{document}
 
 %%%%%%%%% TITLE - PLEASE UPDATE
-\title{Project Proposal: Your Title Goes Here}
+\title{Project Proposal: One-stage method for open-vocabulary semantic segmentation by soliciting co-existing object relations}
 
 \author{
-Member One Name \hspace{1in} Member Two Name \hspace{1in} Member Three Name 
+Tovi Tu \hspace{1in} Anthony Chen \hspace{1in} Shuhan(Steven) Zhang  \hspace{1in} Ben Mueller 
 }
 \maketitle
 
@@ -59,168 +59,100 @@ Member One Name \hspace{1in} Member Two Name \hspace{1in} Member Three Name
 %%%%%%%%% BODY TEXT
 \section{Project Overview}
 
-Add your project description and goals here.
+\subsection{Motivation}
+
+Semantic segmentation is a fundamental computer vision task being studied extensively in a fixed-category setting. However, past models with prediction heads trained in an end-to-end manner lack the flexibility to be readily applied to real-world scenarios. Recent advancements in image encoders supervised by natural language captions have demonstrated amazing abilities to learn cross-modal embeddings adaptable to various downstream tasks. The embedded semantics for a wide range of common objects can effectively extend the image classes beyond predetermined categories. 
+
+\subsection{Problem Definition}
+
+Open-vocabulary semantic segmentation falls into the category of zero-shot learning. This task challenges a model to assign pixel-level class labels from $C=C_{seen} \cup C_{unseen}$ to a given image $x\in X$, where $C_{seen}$ and $C_{unseen}$ are mutually exclusive sets and the former represents classes available in the training set $X_{train}$. The model is trained on $X_{train}$, with input images and ground truth annotation masks. During test time, the model is evaluated in a zero-shot setting, trying to correctly predict unseen labels $c\in C_{unseen}$ in addition to seen labels in the training set $X_{test}$. 
+
+\subsection{Related Works}
+
+A previous method, SimSeg \cite{simseg}, has successfully adapted pretrained CLIP models \cite{clip} for open-vocabulary segmentation by first predicting a class-agnostic mask and then classifying each masked image with CLIP. Since the vanilla CLIP model is trained to generate a global feature for any image, there is a granularity gap between the pretraining objective and the more fine-grained semantic segmentation objective. To close the gap, SimSeg complements MaskFormer \cite{maskformer}, a fixed-class segmentation model, with CLIP to extend the possible classes. However, it fails to exploit the relational information of objects present in the scene by categorizing one masked image at step.
+
+\subsection{Proposed Method}
+
+Inspired by the distributional semantics theory, we propose to capture the distribution of co-existing objects in a scene. In a natural setting, objects in an image often appear together and collectively determine the overall context. Figure 1 gives an intuitive example. In a scenic shot, the appearance of a sea increases the probability of seeing a beach, and a hill is likely to be accompanied by clouds or the sky. The collection of the co-existing objects defines an abstract context of outdoor scenery and rules out the probability of seeing indoor concepts such as a sofa or a television. 
+
+Building upon the intuition, we propose a one-stage architecture that segments an object from the image auto-progressively by first targeting the most prominent object and then conditioning subsequent predictions on previous results. As a preliminary thought, we envision this model to have a transformer style and use a pretrained CLIP encoder and ClipSeg \cite{clipseg} decoder, a zero-shot semantic segmentation model conditioned on prompts, as the backbone. We will modify the encoder for the support prompt to predict the most probable object at the current timestep, which is different from those predicted in the previous timesteps. For the first prediction, we would condition the prediction on a learnable token to signify the start of the sequence and update it during training. We consider freezing those modules or finetuning them with a lower learning rate to avoid catastrophic forgetting in the backbone model.
+
+\begin{figure} [h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/seg_sample.png}
+    \caption{Enter Caption}
+    \label{fig:enter-label}
+\end{figure}
+ 
 
 \section{Team Member Roles/Tasks}
 \label{sec:roles}
+Following the structure for machine learning tasks, we have separated our overall project into 4 sections, data, architecture, training, and benchmark. However, since data and benchmark are tightly coupled, we will combine them into one cohesive section. The detailed responsibility + assignment is outlined below:
 
-\subsection{Member One Name}
+\subsection{Tovi Tu - Architecture}
 
-\begin{enumerate}
+ The architecture lead is responsible for designing the overall structure of the models, including selecting the framework, algorithms, and methodologies. This is crucial and technically complex, which is why we assigned the task to our most technically familiar member in this field, Tovy.
 
-\item task 1
-\item task 2
-\item \ldots
 
-\end{enumerate}
+\subsection{Anthony Chen - Training}
+The training lead is responsible for developing and implementing the training procedure, optimizing model, and ensuring that the training is effective using the datasets. Since this involves more python familiarity and access to computational resources, this task is delegated to Anthony.
 
-\subsection{Member Two Name}
 
-\begin{enumerate}
+\subsection{Steven Zhang - Data}
 
-\item task 1
-\item task 2
-\item \ldots
+Data lead is responsible for researching, collecting, preprocessing, and augmenting datasets for the training procedures. This would require more research and data science expertise. 
 
-\end{enumerate}
 
-\subsection{Member Three Name}
+\subsection{Ben Mueller - Benchmark}
 
-\begin{enumerate}
+As of bench-marking, where the lead is responsible for running related work’s code on the predefined datasets to acquire benchmarks comparison, as well as running our model on multiple datasets to ensure quality and effectiveness. 
 
-\item task 1
-\item task 2
-\item \ldots
 
-\end{enumerate}
 
 \section{Resources}
-
-  Your resources go here.
+\begin{itemize}
+    \item Computational
+    \begin{itemize}
+        \item Graphics
+        \item RIS + Research lab resources
+        \item Google Colab Credits if needed
+    \end{itemize}
+    \item Data:
+    \begin{itemize}
+        \item Open Vocabulary Semantic Segmentation \\
+        \url{https://paperswithcode.com/task/open-vocabulary-semantic-segmentation}
+    \end{itemize}
+    \item Outside code
+    \begin{itemize}
+        \item A Simple Baseline for Open Vocabulary Semantic Segmentation with Pre-trained Vision-language Model \\
+        \url{https://github.com/mendelxu/zsseg.baseline}
+    \end{itemize}
+\end{itemize}
 
 \section{Reservations}
 
-  Your reservations go here.
+One major reservation that we have with this project is that we won’t be able to fully anticipate the computational (training) complexity until we perform further experimentation. As such, the datasets we plan to use may be too large for us to complete comprehensive training and benchmarking using the compute resources at our disposal. If this becomes a problem, we hope that for a minimal goal we will at least have a working re-implementation of the baseline model’s architecture (\url{https://github.com/MendelXu/zsseg.baseline?tab=readme-ov-file}) and to be able to benchmark it on at least one of the datasets that we have brought in. Similarly, a slight reservation we have is the time required to perform all of the needed benchmarking \& training for these models, which is another reason that we want to keep this minimal goal in mind. 
+\begin{itemize}
+    \item Won’t be able to fully anticipate computational+training complexity until further experimentation.
+    \item The dataset might be overly large to complete comprehensive training/benchmarking.
+    \item Minimal:
+    \begin{itemize}
+        \item Implementation of the simple baseline’s architecture. \url{https://github.com/MendelXu/zsseg.baseline?tab=readme-ov-file}
+        \item Benchmark on at least one of the dataset.
+    \end{itemize}
+\end{itemize}
+
 
 \section{Relationship to Background}
 
-A summary of your team's background goes here.
-
-\section{Formatting your paper}
-\label{sec:formatting}
-
-{\huge BE SURE TO DELETE THE FORMATTING SECTION PRIOR TO SUBMISSION}
-
-\begin{figure*}
-  \centering
-  \begin{subfigure}{0.68\linewidth}
-    \fbox{\rule{0pt}{2in} \rule{.9\linewidth}{0pt}}
-    \caption{An example of a subfigure.}
-    \label{fig:short-a}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}{0.28\linewidth}
-    \fbox{\rule{0pt}{2in} \rule{.9\linewidth}{0pt}}
-    \caption{Another example of a subfigure.}
-    \label{fig:short-b}
-  \end{subfigure}
-  \caption{Example of a short caption, which should be centered.}
-  \label{fig:short}
-\end{figure*}
+\begin{itemize}
+    \item \textbf{Tovi} - Currently working on vision-language models under supervision of Prof. Chenguang Wang as an independent project; experience with machine learning and deep learning in time-series analysis and classification.
+    \item \textbf{Anthony} - Taking NLP and CV, familiar with the ML training process. Currently working as a Tech Lead in an iOS application project from WashU medical school. Have more experiences on the tech side: code, GPU, data storing, interface.
+    \item \textbf{Steven} - Steven is experienced with pytorch and related frameworks. Moreover, through past independent research experiences in both WUSTL and Peking University, Steven is familiar with research methodologies related with image search tasks and the utilization CLIP. Steven is not quite familiar with deep learning, or the latest methodologies in computer vision.
+    \item \textbf{Ben} - Experience training large scale models using pytorch / pytorch lightning in research settings, currently using these in a Bioinformatics/ML research project in the WashU medical school.
+\end{itemize}
 
 
-All text must be in a two-column format.
-The total allowable size of the text area is $6\frac78$ inches (17.46 cm) wide by $8\frac78$ inches (22.54 cm) high.
-Columns are to be $3\frac14$ inches (8.25 cm) wide, with a $\frac{5}{16}$ inch (0.8 cm) space between them.
-The main title (on the first page) should begin 1 inch (2.54 cm) from the top edge of the page.
-The second and following pages should begin 1 inch (2.54 cm) from the top edge.
-On all pages, the bottom margin should be $1\frac{1}{8}$ inches (2.86 cm) from the bottom edge of the page for $8.5 \times 11$-inch paper;
-for A4 paper, approximately $1\frac{5}{8}$ inches (4.13 cm) from the bottom edge of the
-page.
-
-%-------------------------------------------------------------------------
-\subsection{Margins and page numbering}
-
-All printed material, including text, illustrations, and charts, must be kept
-within a print area $6\frac{7}{8}$ inches (17.46 cm) wide by $8\frac{7}{8}$ inches (22.54 cm)
-high.
-%
-Page numbers should be in the footer, centered and $\frac{3}{4}$ inches from the bottom of the page.
-The review version should have page numbers, yet the final version submitted as camera ready should not show any page numbers.
-The \LaTeX\ template takes care of this when used properly.
-
-
-
-%-------------------------------------------------------------------------
-\subsection{Footnotes}
-
-Please use footnotes\footnote{This is what a footnote looks like. It often distracts the reader from the main flow of the argument.} sparingly. Indeed, try to avoid footnotes altogether and include necessary peripheral observations in the text (within parentheses, if you prefer, as in this sentence). If you wish to use a footnote, place it at the bottom of the column on the page on which it is referenced.
-
-%-------------------------------------------------------------------------
-\subsection{Cross-references}
-
-For the benefit of author(s) and readers, please use the
-{\small\begin{verbatim}
-  \cref{...}
-\end{verbatim}}  command for cross-referencing to figures, tables, equations, or sections.
-This will automatically insert the appropriate label alongside the cross-reference as in this example:
-\begin{quotation}
-  To see how our method outperforms previous work, please see \cref{fig:short-a} and \cref{tab:example}.
-  It is also possible to refer to multiple targets as once, \eg~to \cref{fig:short-a}.
-  You may also return to \cref{fig:short} or look at \cref{tab:example}.
-\end{quotation}
-If you do not wish to abbreviate the label, for example at the beginning of the sentence, you can use the
-{\small\begin{verbatim}
-  \Cref{...}
-\end{verbatim}}
-command. Here is an example:
-\begin{quotation}
-  \Cref{fig:short} is also quite important.
-\end{quotation}
-
-%-------------------------------------------------------------------------
-\subsection{References}
-
-When referenced in the text, enclose the citation number in square brackets, for
-example~\cite{Authors14}.
-Where appropriate, include page numbers and the name(s) of editors of referenced books.
-When you cite multiple papers at once, please make sure that you cite them in numerical order like this \cite{Alpher02,Alpher03,Alpher05,Authors14b,Authors14}.
-If you use the template as advised, this will be taken care of automatically.
-
-\begin{table}
-  \centering
-  \begin{tabular}{@{}lc@{}}
-    \toprule
-    Method & Frobnability \\
-    \midrule
-    Theirs & Frumpy \\
-    Yours & Frobbly \\
-    Ours & Makes one's heart Frob\\
-    \bottomrule
-  \end{tabular}
-  \caption{Results.   Ours is better.}
-  \label{tab:example}
-\end{table}
-
-%-------------------------------------------------------------------------
-\subsection{Illustrations, graphs, and photographs}
-
-All graphics should be centered.
-In \LaTeX, avoid using the \texttt{center} environment for this purpose, as this adds potentially unwanted whitespace.
-Instead use
-{\small\begin{verbatim}
-  \centering
-\end{verbatim}}
-at the beginning of your figure.
-Please ensure that any point you wish to make is resolvable in a printed copy of the paper. Resize fonts in figures to match the font in the body text, and choose line widths that render effectively in print. Readers (and reviewers), even of an electronic copy, may choose to print your paper in order to read it. You cannot insist that they do otherwise, and therefore must not assume that they can zoom in to see tiny details on a graphic.
-
-When placing figures in \LaTeX, it's almost always best to use \verb+\includegraphics+, and to specify the figure width as a multiple of the line width as in the example below
-{\small\begin{verbatim}
-   \usepackage{graphicx} ...
-   \includegraphics[width=0.8\linewidth]
-                   {myfile.pdf}
-\end{verbatim}
-}
 
 %%%%%%%%% REFERENCES
 {\small
