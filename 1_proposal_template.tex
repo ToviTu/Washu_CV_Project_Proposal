@@ -44,7 +44,7 @@
 \begin{document}
 
 %%%%%%%%% TITLE - PLEASE UPDATE
-\title{Project Proposal: One-stage method for open-vocabulary semantic segmentation by soliciting co-existing object relations}
+\title{Project Proposal: Co-existing Object Conditioning for Open-Vocabulary Segmentation}
 
 \author{
 Tovi Tu \hspace{1in} Anthony Chen \hspace{1in} Shuhan(Steven) Zhang  \hspace{1in} Ben Mueller 
@@ -53,7 +53,8 @@ Tovi Tu \hspace{1in} Anthony Chen \hspace{1in} Shuhan(Steven) Zhang  \hspace{1in
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-  Your abstract goes here.
+Semantic segmentation is essential in real world applications such as autonomous driving. However, Past models lack the flexibility to generalize to unseen objects common in the real-world setting. Recent developments in vision-language pretraining have shown incredible abilities to unify text and image encoders in a general embedding space with the potential to establish semantic correspondence between image and texts, enabling open-vocabulary semantic segmentation where a model assign pixel-wise class label beyond predefined categories. To exploit the latent distribution of co-occurring objects in a scene, this work propose to utilize a transformer-based model with a pretrained CLIP encoder and a ClipSeg decoder to segment images by predicting a sequence of object masks conditioned on previous outputs, expecting to achieve a better accuracy than the existing baseline method.
+
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -61,96 +62,79 @@ Tovi Tu \hspace{1in} Anthony Chen \hspace{1in} Shuhan(Steven) Zhang  \hspace{1in
 
 \subsection{Motivation}
 
-Semantic segmentation is a fundamental computer vision task being studied extensively in a fixed-category setting. However, past models with prediction heads trained in an end-to-end manner lack the flexibility to be readily applied to real-world scenarios. Recent advancements in image encoders supervised by natural language captions have demonstrated amazing abilities to learn cross-modal embeddings adaptable to various downstream tasks. The embedded semantics for a wide range of common objects can effectively extend the image classes beyond predetermined categories. 
+Semantic segmentation is a fundamental computer vision task being studied extensively in a fixed-category setting. However, past models with prediction heads trained in an end-to-end manner lack the flexibility to be readily applied to real-world scenarios since many categories missing in the training set are not recognizable. Recent advancements in image encoders supervised by natural language captions have demonstrated amazing abilities to learn cross-modal embeddings adaptable to various downstream tasks. The embedded semantic correspondence between image and text labels for a wide range of common objects can effectively extend the image classes beyond predetermined categories and allow for an easy adaptation to out-of-distribution data. 
 
 \subsection{Problem Definition}
 
-Open-vocabulary semantic segmentation falls into the category of zero-shot learning. This task challenges a model to assign pixel-level class labels from $C=C_{seen} \cup C_{unseen}$ to a given image $x\in X$, where $C_{seen}$ and $C_{unseen}$ are mutually exclusive sets and the former represents classes available in the training set $X_{train}$. The model is trained on $X_{train}$, with input images and ground truth annotation masks. During test time, the model is evaluated in a zero-shot setting, trying to correctly predict unseen labels $c\in C_{unseen}$ in addition to seen labels in the training set $X_{test}$. 
+Open-vocabulary semantic segmentation falls into the category of zero-shot learning. This task challenges a model to assign pixel-level class labels from the set of all possible classes $C=C_{seen} \cup C_{unseen}$ to a given image $x\in X$, where $C_{seen}$ and $C_{unseen}$ are mutually exclusive sets and the former represents classes available in the training set $X_{train}$. The model is trained on $X_{train}$, with input images and ground truth annotation masks. During test time, the model is evaluated in a zero-shot setting, trying to correctly predict unseen labels $c\in C_{unseen}$ in addition to seen labels in the training set $X_{test}$. 
 
 \subsection{Related Works}
 
-A previous method, SimSeg \cite{simseg}, has successfully adapted pretrained CLIP models \cite{clip} for open-vocabulary segmentation by first predicting a class-agnostic mask and then classifying each masked image with CLIP. Since the vanilla CLIP model is trained to generate a global feature for any image, there is a granularity gap between the pretraining objective and the more fine-grained semantic segmentation objective. To close the gap, SimSeg complements MaskFormer \cite{maskformer}, a fixed-class segmentation model, with CLIP to extend the possible classes. However, it fails to exploit the relational information of objects present in the scene by categorizing one masked image at step.
+A previous method, SimSeg \cite{simseg}, has successfully adapted pretrained CLIP models \cite{clip} for open-vocabulary segmentation by first predicting a class-agnostic mask and then classifying each masked image with CLIP. Since the vanilla CLIP model is trained to generate a global feature for any image, there is a granularity gap between the pretraining objective and the more fine-grained semantic segmentation objective. To close the gap, SimSeg complements MaskFormer \cite{maskformer}, a fixed-class segmentation model, with CLIP to extend the possible classes. However, it fails to exploit the relational information of objects present in the scene by categorizing one masked image at a time.
 
 \subsection{Proposed Method}
 
-Inspired by the distributional semantics theory, we propose to capture the distribution of co-existing objects in a scene. In a natural setting, objects in an image often appear together and collectively determine the overall context. Figure 1 gives an intuitive example. In a scenic shot, the appearance of a sea increases the probability of seeing a beach, and a hill is likely to be accompanied by clouds or the sky. The collection of the co-existing objects defines an abstract context of outdoor scenery and rules out the probability of seeing indoor concepts such as a sofa or a television. 
+Inspired by the distributional semantics theory, we propose to capture the distribution of co-existing objects in a scene. In a natural setting, objects in an image often appear together and collectively determine the overall context. Figure 1 gives an intuitive example. In the scenic shot, the appearance of a sea increases the probability of seeing a beach, and a hill is likely to be accompanied by clouds or the sky. The collection of the co-existing objects defines an abstract context of outdoor scenery and rules out the probability of seeing indoor concepts such as a sofa or a television. The latent prior distribution is potentially useful for detecting a set of objects in one image. 
 
-Building upon the intuition, we propose a one-stage architecture that segments an object from the image auto-progressively by first targeting the most prominent object and then conditioning subsequent predictions on previous results. As a preliminary thought, we envision this model to have a transformer style and use a pretrained CLIP encoder and ClipSeg \cite{clipseg} decoder, a zero-shot semantic segmentation model conditioned on prompts, as the backbone. We will modify the encoder for the support prompt to predict the most probable object at the current timestep, which is different from those predicted in the previous timesteps. For the first prediction, we would condition the prediction on a learnable token to signify the start of the sequence and update it during training. We consider freezing those modules or finetuning them with a lower learning rate to avoid catastrophic forgetting in the backbone model.
+Building upon the intuition, we propose a one-stage architecture that segments an object from the image auto-progressively by first targeting the most prominent object and then conditioning subsequent predictions on previous results. As a preliminary thought, we envision this model to have a transformer style and use a pretrained CLIP encoder and ClipSeg \cite{clipseg} decoder, a zero-shot semantic segmentation model conditioned on prompts, as the backbone. To adapt the prompt-conditioned model, We will modify the encoder for the support prompt so that it actively predicts the most probable object at the current timestep, which is different from those predicted in the previous timesteps. For the first prediction, we would condition the prediction on a learnable token to signify the start of the sequence and update it during training. Similar to the next token prediction language models, our model accepts a raw image and predicts a sequence of mutually exclusive masks with labels. We consider freezing those modules or fine-tuning them with a lower learning rate to avoid catastrophic forgetting in the backbone model.
 
 \begin{figure} [h]
     \centering
     \includegraphics[width=0.5\linewidth]{images/seg_sample.png}
-    \caption{Enter Caption}
+    \caption{Example Segmented Image from CLipSeg \cite{clipseg}}
     \label{fig:enter-label}
 \end{figure}
- 
+
+\subsection{Goals}
+
+We will evaluate the performance of our model on the same set of benchmarks as in \cite{simseg}. The minimum goal for this project is to implement a simple two-stage method similar to \cite{simseg} with a classifier and a mask generator but with the selected CLipSeg \cite{clipseg} backbone and evaluate its efficacy on one large-scale benchmark. If desirable performance is obtained, we will implement a unified model for both tasks and make meaningful use of the co-existing relations in images for prediction. We will experiment with different hyperprameters and training strategy to maximize the performance on a full-scale training dataset. For evaluation, we will benchmark the model on common segmentation datasets to compare the performance to other existing models. We expect our model to outperform the baseline.
 
 \section{Team Member Roles/Tasks}
 \label{sec:roles}
-Following the structure for machine learning tasks, we have separated our overall project into 4 sections, data, architecture, training, and benchmark. However, since data and benchmark are tightly coupled, we will combine them into one cohesive section. The detailed responsibility + assignment is outlined below:
+Following the structure for machine learning tasks, we have separated our overall project into 4 sections, data, architecture, training, and benchmark. Since some tasks are tightly coupled, such as data and benchmark, we will ensure communication among team members across sections to maintain alignment and efficiency. The detailed responsibility and assignment is outlined below:
 
-\subsection{Tovi Tu - Architecture}
-
- The architecture lead is responsible for designing the overall structure of the models, including selecting the framework, algorithms, and methodologies. This is crucial and technically complex, which is why we assigned the task to our most technically familiar member in this field, Tovy.
+\textbf{Tovi Tu - Architecture lead} is responsible for designing the overall structure of the models, including selecting the framework, algorithms, and methodologies. This is crucial and technically complex, which is why we assigned the task to our most technically familiar member in this field.
 
 
-\subsection{Anthony Chen - Training}
-The training lead is responsible for developing and implementing the training procedure, optimizing model, and ensuring that the training is effective using the datasets. Since this involves more python familiarity and access to computational resources, this task is delegated to Anthony.
+\textbf{Anthony Chen - Training lead} is responsible for developing and implementing the training procedure, optimizing model, and ensuring that the training is effective using the datasets. Since this involves more python familiarity and access to computational resources, this task is delegated to Anthony.
 
 
-\subsection{Steven Zhang - Data}
-
-Data lead is responsible for researching, collecting, preprocessing, and augmenting datasets for the training procedures. This would require more research and data science expertise. 
+\textbf{Steven Zhang - Data lead} is responsible for researching, collecting, preprocessing, and augmenting datasets for the training procedures. This would require more research and data science expertise. 
 
 
-\subsection{Ben Mueller - Benchmark}
-
-As of bench-marking, where the lead is responsible for running related work’s code on the predefined datasets to acquire benchmarks comparison, as well as running our model on multiple datasets to ensure quality and effectiveness. 
+\textbf{Ben Mueller - Benchmark lead} is responsible for running related work’s code on the predefined datasets to acquire benchmarks comparison, as well as running our model on multiple datasets to ensure quality and effectiveness. 
 
 
 
 \section{Resources}
-\begin{itemize}
-    \item Computational
-    \begin{itemize}
-        \item Graphics
-        \item RIS + Research lab resources
-        \item Google Colab Credits if needed
-    \end{itemize}
-    \item Data:
-    \begin{itemize}
-        \item Open Vocabulary Semantic Segmentation \\
-        \url{https://paperswithcode.com/task/open-vocabulary-semantic-segmentation}
-    \end{itemize}
-    \item Outside code
-    \begin{itemize}
-        \item A Simple Baseline for Open Vocabulary Semantic Segmentation with Pre-trained Vision-language Model \\
-        \url{https://github.com/mendelxu/zsseg.baseline}
-    \end{itemize}
-\end{itemize}
+For computational resources, we will rely on personal NVIDIA 40 series graphics card's processing capabilities and have access to high-performance compute nodes including WashU Research Infrastructure \url{https://ris.wustl.edu/}, national research platform \url{https://nationalresearchplatform.org/} and other resources through our research labs. If necessary, we might also use Google Colab credits for extra computational power.
+
+As the data plays an essential role, we will utilize the COCO stuff dataset\cite{cocostuff}, which provides detailed pixel-level annotations for a diverse array of objects and scenes, as shown in the figure. There are 118k training images labeled with 171 valid categories featuring common objects as the sky and cars. For evaluation, we will use the ADE20K \cite{ade20k} and Pascal VOC \cite{pascal} datasets to quantify the generalizability of the model.
+
+For development, we plan to build upon the pretrained models and initialize the weights from open-source checkpoints accessible through huggingface \url{https://huggingface.co/docs/transformers/model_doc/clipseg}. We will also access the official codes for benchmark metric functions through the provided toolbox \url{https://github.com/CSAILVision/ADE20K}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\linewidth]{cocostuff.png}
+    \caption{Coco Stuff \cite{cocostuff} dataset with pixel-level annotations}
+    \label{fig:enter-label}
+\end{figure}
 
 \section{Reservations}
 
-One major reservation that we have with this project is that we won’t be able to fully anticipate the computational (training) complexity until we perform further experimentation. As such, the datasets we plan to use may be too large for us to complete comprehensive training and benchmarking using the compute resources at our disposal. If this becomes a problem, we hope that for a minimal goal we will at least have a working re-implementation of the baseline model’s architecture (\url{https://github.com/MendelXu/zsseg.baseline?tab=readme-ov-file}) and to be able to benchmark it on at least one of the datasets that we have brought in. Similarly, a slight reservation we have is the time required to perform all of the needed benchmarking \& training for these models, which is another reason that we want to keep this minimal goal in mind. 
-\begin{itemize}
-    \item Won’t be able to fully anticipate computational+training complexity until further experimentation.
-    \item The dataset might be overly large to complete comprehensive training/benchmarking.
-    \item Minimal:
-    \begin{itemize}
-        \item Implementation of the simple baseline’s architecture. \url{https://github.com/MendelXu/zsseg.baseline?tab=readme-ov-file}
-        \item Benchmark on at least one of the dataset.
-    \end{itemize}
-\end{itemize}
+One major reservation that we have with this project is that we won’t be able to fully anticipate the computational, training and testing, complexity until we perform further experimentation. As such, the datasets we plan to use may be too large for us to complete comprehensive training and benchmarking using the compute resources at our disposal. If this becomes a problem, we hope that for a minimal goal we will at least implement a object classifier and mask generator similar to \cite{simseg} and to be able to benchmark it on at least one of the common datasets. Another reservation is the lack of preliminary results to support the claimed method at the time of the proposal. Our hypothesis that relational knowledge of co-occurring objects may fall apart because such information may be intractable or contains too much noise for meaningful prediction.
+
 
 
 \section{Relationship to Background}
 
-\begin{itemize}
-    \item \textbf{Tovi} - Currently working on vision-language models under supervision of Prof. Chenguang Wang as an independent project; experience with machine learning and deep learning in time-series analysis and classification.
-    \item \textbf{Anthony} - Taking NLP and CV, familiar with the ML training process. Currently working as a Tech Lead in an iOS application project from WashU medical school. Have more experiences on the tech side: code, GPU, data storing, interface.
-    \item \textbf{Steven} - Steven is experienced with pytorch and related frameworks. Moreover, through past independent research experiences in both WUSTL and Peking University, Steven is familiar with research methodologies related with image search tasks and the utilization CLIP. Steven is not quite familiar with deep learning, or the latest methodologies in computer vision.
-    \item \textbf{Ben} - Experience training large scale models using pytorch / pytorch lightning in research settings, currently using these in a Bioinformatics/ML research project in the WashU medical school.
-\end{itemize}
+\textbf{Tovi} is currently working on vision-language models under supervision of Prof. Chenguang Wang as an independent project with experience with machine learning and deep learning in time-series analysis and classification by using PyTorch and TensorFlow.
+
+\textbf{Anthony} is taking NLP and CV, familiar with the ML training process. Currently working as a Tech Lead in an iOS application project from WashU medical school. Have more experiences on the tech side: code, GPU, data storing, interface.
+
+\textbf{Steven} is experienced with pytorch and related frameworks. Moreover, through past independent research experiences in both WUSTL and Peking University, Steven is familiar with research methodologies related with image search tasks and the utilization CLIP. Steven is not quite familiar with deep learning, or the latest methodologies in computer vision.
+
+\textbf{Ben} has experience training large scale models using pytorch and pytorch lightning in research settings, currently using these in a Bioinformatics/ML research project in the WashU medical school.
 
 
 
